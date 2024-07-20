@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
+                "/opt/homebrew/opt/libpqxx/include",
+                "/opt/homebrew/opt/boost/include",
+                "/opt/homebrew/opt/ncurses/include",
+                "${workspaceFolder}/websocketpp"
+            ],
+            "defines": [],
+            "intelliSenseMode": "macos-clang-arm64",
+            "cppStandard": "c++17",
+            "cStandard": "c11"
+        }
+    ],
+    "version": 4
+}
