@@ -22,11 +22,20 @@ void ServerController::run_server()
     // start the acceptance loop, now the server will accept new connections.
     _server.start_accept();
 
-    std::cout << "WebSocket server listening on port 9002..." << std::endl;
+    std::cout << "WebSocket server listening on port " << port << "..." << std::endl;
 
-    while (running)
+    try
     {
-        _server.run();
+        while (running)
+        {
+            _server.poll();
+            // add a small delay to prevent a tight loop
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Excpetion in try catch" << std::endl;
     }
 };
 

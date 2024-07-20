@@ -14,9 +14,8 @@ void ServerManager::create_server(std::string name, std::string owner)
     std::string query = "INSERT INTO server (name, port, owner) VALUES ('" + name + "', '" + port + "', '" + user_id + "')";
     db_controller.execute_query(query);
 
-    // ServerController server_controller;
     std::shared_ptr<ServerController> server_controller = std::make_shared<ServerController>();
-    std::thread run_server_thread(&ServerController::run_server, &server_controller);
+    std::thread run_server_thread(&ServerController::run_server, server_controller);
     ServerData server_data;
     server_data.thread = std::move(run_server_thread);
     server_data.controller = server_controller;
@@ -37,6 +36,19 @@ void ServerManager::destroy_server(std::string name)
     db_controller.execute_query(query);
 };
 
-pqxx::row ServerManager::fetch_servers() {
-
+pqxx::result ServerManager::fetch_servers(std::string user_id)
+{
+    std::string query = "SELECT * FROM server where owner = '" + user_id + "';";
+    return db_controller.execute_query(query);
 };
+
+void ServerManager::close_all(std::string user_id)
+{
+    pqxx::result servers = fetch_servers(user_id);
+
+    for (const auto &row : servers)
+    {
+        std::string server_name = row["name"].as<std::string>();
+        destroy_server(server_name);
+    }
+}

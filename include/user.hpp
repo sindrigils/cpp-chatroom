@@ -6,10 +6,12 @@ class User
 {
 private:
     std::string username;
+    std::string id;
 
 public:
-    User(std::string username);
+    User(std::string username, std::string id);
     std::string get_username() const;
+    std::string get_id() const;
 
     friend std::ostream &operator<<(std::ostream &os, const User &user);
 };

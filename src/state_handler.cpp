@@ -67,6 +67,8 @@ State StateHandler::login_page()
                   << std::endl;
         return State::LOGIN;
     }
+    std::string user_id = user_controller.get_user_id(username);
+    user = User(username, user_id);
 
     return State::MENU;
 }
@@ -94,7 +96,7 @@ State StateHandler::register_page()
     }
     try
     {
-        std::unique_ptr<User> user = user_controller.create_user(username, password);
+        user = user_controller.create_user(username, password);
     }
     catch (const pqxx::unique_violation &e)
     {
@@ -144,11 +146,6 @@ State StateHandler::menu_page()
 State StateHandler::join_server_page()
 {
     client_controller.join_server();
-    // get all servers
-    // display all servers
-    // get input (number)
-    // join
-
     return State::MENU;
 }
 
@@ -157,10 +154,17 @@ State StateHandler::create_server_page()
     std::cout << "Enter the server name: ";
     std::string server_name;
     std::getline(std::cin, server_name);
-    server_manager.create_server(server_name, "sindri");
-    server_manager.destroy_server(server_name);
-    // std::thread run_server_thread(&ServerController::run_server, &server_controller);
-    // server_controller.shut_down_server(&run_server_thread);
+
+    server_manager.create_server(server_name, user->get_username());
 
     return State::MENU;
+}
+
+void StateHandler::quit()
+{
+    if (user)
+    {
+        server_manager.close_all(user->get_id());
+        user_controller.unset_as_active(user->get_username());
+    }
 }

@@ -21,6 +21,7 @@ int main()
     {
         state = state_lookup[state]();
     }
+    state_handle.quit();
     std::cout << "Bye bye" << std::endl;
     return 0;
 }

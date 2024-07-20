@@ -15,7 +15,8 @@ public:
     ServerManager();
     void create_server(std::string name, std::string owner);
     void destroy_server(std::string name);
-    pqxx::row fetch_servers();
+    void close_all(std::string user_id);
+    pqxx::result fetch_servers(std::string user_id);
 
 private:
     struct ServerData
