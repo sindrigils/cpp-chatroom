@@ -132,7 +132,6 @@ State StateHandler::menu_page()
     {
     case 1:
         return State::JOIN_SERVER;
-
     case 2:
         return State::CREATE_SERVER;
     case 3:

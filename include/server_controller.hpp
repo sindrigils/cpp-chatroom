@@ -6,16 +6,17 @@
 #include <set>
 #include <map>
 #include <atomic>
+#include <fstream>
 
 typedef websocketpp::server<websocketpp::config::asio> server;
 
 class ServerController
 {
 public:
-    ServerController();
-
+    ServerController(const std::string &name);
     void run_server();
     void shut_down_server(std::thread &server_thread);
+    std::string get_name() const;
 
 private:
     struct connection_hdl_comp
@@ -35,6 +36,10 @@ private:
     static int get_next_port();
     static std::atomic<int> next_port;
     std::atomic<bool> running;
+    const std::string name;
+    std::ofstream log_file;
+
+    void log(const std::string &message);
 };
 
 #endif

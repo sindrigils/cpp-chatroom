@@ -4,7 +4,17 @@
 
 std::atomic<int> ServerController::next_port{9002};
 
-ServerController::ServerController() : running(true){};
+ServerController::ServerController(const std::string &name) : running(true), name(name)
+{
+    std::string log_filename = "logs/log_" + name + ".txt";
+    log_file.open(log_filename);
+    _server.set_access_channels(websocketpp::log::alevel::all);
+    _server.clear_access_channels(websocketpp::log::alevel::frame_payload);
+    _server.set_error_channels(websocketpp::log::elevel::all);
+
+    _server.get_alog().set_ostream(&log_file);
+    _server.get_elog().set_ostream(&log_file);
+};
 void ServerController::run_server()
 {
     int port = get_next_port();
@@ -15,14 +25,10 @@ void ServerController::run_server()
 
     // initlaize the event loop, allowing async operations. This allows the server to handle events in async such as new connections, sending message and etc.
     _server.init_asio();
-
-    // bind the server to this port, the server will listen for TCP connections on this port.
     _server.listen(port);
-
-    // start the acceptance loop, now the server will accept new connections.
     _server.start_accept();
 
-    std::cout << "WebSocket server listening on port " << port << "..." << std::endl;
+    log("WebSocket server listening on port " + std::to_string(port) + "...");
 
     try
     {
@@ -41,12 +47,13 @@ void ServerController::run_server()
 
 void ServerController::shut_down_server(std::thread &server_thread)
 {
-    std::cout << "Server closed" << std::endl;
+    log("Server closed");
     running = false;
     server_thread.join();
 
     active_connections.clear();
     clients.clear();
+    log_file.close();
 };
 
 void ServerController::on_open(websocketpp::connection_hdl hdl)
@@ -57,7 +64,8 @@ void ServerController::on_open(websocketpp::connection_hdl hdl)
 
 void ServerController::on_close_server(websocketpp::connection_hdl hdl)
 {
-    std::cout << "Connection closed" << std::endl;
+    log("Connection closed");
+
     active_connections.erase(hdl);
 }
 
@@ -69,12 +77,13 @@ void ServerController::on_message(websocketpp::connection_hdl hdl, server::messa
     auto it = clients.find(hdl);
     if (it == clients.end())
     {
-        std::cout << "Adding user with name: " << message << " to the map" << std::endl;
+        log("Adding user with name: " + message + " to the map");
+
         clients[hdl] = message;
         return;
     }
 
-    std::cout << "Received message: " << message << std::endl;
+    log("Received message: " + message);
 
     std::string sender_name = it->second;
     std::string broadcast_msg = sender_name + ": " + message;
@@ -91,4 +100,12 @@ void ServerController::on_message(websocketpp::connection_hdl hdl, server::messa
 int ServerController::get_next_port()
 {
     return next_port++;
+}
+
+void ServerController::log(const std::string &message)
+{
+    if (log_file.is_open())
+    {
+        log_file << message << std::endl;
+    }
 }

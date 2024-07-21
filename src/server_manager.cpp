@@ -14,7 +14,7 @@ void ServerManager::create_server(std::string name, std::string owner)
     std::string query = "INSERT INTO server (name, port, owner) VALUES ('" + name + "', '" + port + "', '" + user_id + "')";
     db_controller.execute_query(query);
 
-    std::shared_ptr<ServerController> server_controller = std::make_shared<ServerController>();
+    std::shared_ptr<ServerController> server_controller = std::make_shared<ServerController>(name);
     std::thread run_server_thread(&ServerController::run_server, server_controller);
     ServerData server_data;
     server_data.thread = std::move(run_server_thread);

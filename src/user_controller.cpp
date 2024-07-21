@@ -1,9 +1,9 @@
 #include <iostream>
 #include <pqxx/pqxx>
+
 #include "user_controller.hpp"
 
-std::vector<User>
-UserController::get_all_users()
+std::vector<User> UserController::get_all_users()
 {
     std::vector<User> users;
     pqxx::connection conn = db_controller.get_connection();
@@ -32,9 +32,10 @@ UserController::get_all_users()
 User UserController::create_user(std::string username, std::string password)
 {
     pqxx::connection conn = db_controller.get_connection();
-    std::string query = "INSERT INTO custom_user (username, password, is_active) VALUES ('" + username + "', '" + password + "', true)";
-    db_controller.execute_query(query);
-    std::string user_id = db_controller.execute_query("SELECT id from custom_user where username='" + username + "';")[0]["id"].as<std::string>();
+    std::string insert_query = "INSERT INTO custom_user (username, password, is_active) VALUES ('" + username + "', '" + password + "', true)";
+    std::string select_query = "SELECT id from custom_user where username='" + username + "';";
+    db_controller.execute_query(insert_query);
+    std::string user_id = db_controller.execute_query(select_query)[0]["id"].as<std::string>();
     User user(username, user_id);
     return user;
 }
