@@ -2,11 +2,9 @@
 
 #include "server_controller.hpp"
 
-std::atomic<int> ServerController::next_port{9002};
-
-ServerController::ServerController(const std::string &name) : running(true), name(name)
+ServerController::ServerController(const int port) : running(true), port(port)
 {
-    std::string log_filename = "logs/log_" + name + ".txt";
+    log_filename = "logs/log_" + std::to_string(port) + ".txt";
     log_file.open(log_filename);
     _server.set_access_channels(websocketpp::log::alevel::all);
     _server.clear_access_channels(websocketpp::log::alevel::frame_payload);
@@ -17,8 +15,6 @@ ServerController::ServerController(const std::string &name) : running(true), nam
 };
 void ServerController::run_server()
 {
-    int port = get_next_port();
-
     _server.set_open_handler(bind(&ServerController::on_open, this, std::placeholders::_1));
     _server.set_close_handler(bind(&ServerController::on_close_server, this, std::placeholders::_1));
     _server.set_message_handler(bind(&ServerController::on_message, this, std::placeholders::_1, std::placeholders::_2));
@@ -97,15 +93,38 @@ void ServerController::on_message(websocketpp::connection_hdl hdl, server::messa
     }
 };
 
-int ServerController::get_next_port()
+std::string ServerController::get_name() const
 {
-    return next_port++;
+    return name;
+}
+
+int ServerController::get_port() const
+{
+    return port;
 }
 
 void ServerController::log(const std::string &message)
 {
+    std::lock_guard<std::mutex> lock(log_mutex);
     if (log_file.is_open())
     {
         log_file << message << std::endl;
     }
+}
+
+void ServerController::read_log()
+{
+    std::lock_guard<std::mutex> lock(log_mutex);
+    std::ifstream infile(log_filename);
+    if (!infile.is_open())
+    {
+        std::cerr << "Unable to open log file for reading." << std::endl;
+        return;
+    }
+    std::string line;
+    while (std::getline(infile, line))
+    {
+        std::cout << line << std::endl;
+    }
+    infile.close();
 }

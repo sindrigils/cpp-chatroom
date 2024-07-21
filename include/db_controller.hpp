@@ -5,12 +5,6 @@
 #include <pqxx/pqxx>
 #include <cstdlib>
 
-static inline std::string get_env_var(const std::string &key, const std::string &default_value)
-{
-    const char *val = std::getenv(key.c_str());
-    return val == nullptr ? default_value : std::string(val);
-}
-
 class DBController
 {
 public:

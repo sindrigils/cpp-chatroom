@@ -9,6 +9,10 @@ enum class State
     QUIT,
     JOIN_SERVER,
     CREATE_SERVER,
+    PROFILE,
+    VIEW_SERVERS,
+    MANAGE_SERVER,
+    SERVER_LOG,
 };
 
 #endif

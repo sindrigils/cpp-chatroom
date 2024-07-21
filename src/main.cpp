@@ -14,6 +14,7 @@ int main()
         {State::MENU, std::bind(&StateHandler::menu_page, &state_handle)},
         {State::CREATE_SERVER, std::bind(&StateHandler::create_server_page, &state_handle)},
         {State::JOIN_SERVER, std::bind(&StateHandler::join_server_page, &state_handle)},
+        {State::VIEW_SERVERS, std::bind(&StateHandler::view_servers_page, &state_handle)},
     };
 
     State state = State::AUTH;

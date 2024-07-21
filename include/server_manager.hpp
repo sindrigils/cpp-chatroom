@@ -5,6 +5,7 @@
 #include <map>
 #include <pqxx/pqxx>
 #include <memory>
+#include <optional>
 
 #include "server_controller.hpp"
 #include "db_controller.hpp"
@@ -14,11 +15,14 @@ class ServerManager
 public:
     ServerManager();
     void create_server(std::string name, std::string owner);
-    void destroy_server(std::string name);
-    void close_all(std::string user_id);
-    pqxx::result fetch_servers(std::string user_id);
+    void close(std::optional<std::string> server_name = std::nullopt);
+    void display_log(std::string server_name);
+    std::map<std::string, int> get_all_servers();
+    std::map<std::string, int> get_servers();
 
 private:
+    static int get_next_port();
+    static std::atomic<int> next_port;
     struct ServerData
     {
         std::thread thread;
@@ -26,6 +30,7 @@ private:
     };
     std::map<std::string, ServerData> servers;
     DBController db_controller;
+    void destroy_server(std::string name);
 };
 
 #endif

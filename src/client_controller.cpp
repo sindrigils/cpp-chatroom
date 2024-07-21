@@ -7,7 +7,7 @@ ClientController::ClientController() : running(true), message_win(nullptr), inpu
 
 ClientController::~ClientController()
 {
-    std::cout << "dead" << std::endl;
+    cleanup();
 }
 
 void ClientController::set_up()
@@ -35,7 +35,7 @@ void ClientController::set_up()
     wrefresh(input_win);
 }
 
-void ClientController::join_server()
+void ClientController::join_server(int port)
 {
     set_up();
     websocket_client.init_asio();
@@ -58,7 +58,7 @@ void ClientController::join_server()
         messages.push_back(msg->get_payload()); });
 
     websocketpp::lib::error_code ec;
-    auto con = websocket_client.get_connection("ws://localhost:9002", ec);
+    auto con = websocket_client.get_connection("ws://localhost:" + std::to_string(port), ec);
     if (ec)
     {
         std::cout << "Error initiating connection: " << ec.message() << std::endl;

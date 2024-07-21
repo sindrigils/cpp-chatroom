@@ -24,6 +24,9 @@ public:
     State menu_page();
     State join_server_page();
     State create_server_page();
+    State view_servers_page();
+    void server_log_page(std::string server_name);
+    void manage_server_page(std::string server_name);
     void quit();
 };
 

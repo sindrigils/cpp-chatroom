@@ -13,7 +13,7 @@ public:
     ClientController();
     ~ClientController();
 
-    void join_server();
+    void join_server(int port);
     void cleanup();
 
 private:
