@@ -128,3 +128,18 @@ void ServerController::read_log()
     }
     infile.close();
 }
+
+void ServerController::display_users()
+{
+    if (clients.size() == 0)
+    {
+        std::cout << "The server is empty" << std::endl;
+        return;
+    }
+
+    std::cout << "Here is a list of all users in the server" << std::endl;
+    for (auto it : clients)
+    {
+        std::cout << it.second << std::endl;
+    }
+}

@@ -3,15 +3,23 @@
 #include <thread>
 #include <chrono>
 
-ClientController::ClientController() : running(true), message_win(nullptr), input_win(nullptr) {}
+ClientController::ClientController() : running(true), _user_id(""), _server_id(""), message_win(nullptr), input_win(nullptr) {}
 
 ClientController::~ClientController()
 {
     cleanup();
 }
 
-void ClientController::set_up()
+void ClientController::set_up(int port)
 {
+    std::string get_server_query = "SELECT id from server where port ='" + std::to_string(port) + "';";
+    std::string server_id = db_controller.execute_query(get_server_query)[0]["id"].as<std::string>();
+    _server_id = server_id;
+
+    std::string insert_query = "INSERT INTO connection (user_id, server_id) VALUES ('" + _user_id + "', '" + server_id + "');";
+    db_controller.execute_query(insert_query);
+
+    // initalize ncurses
     initscr();
     cbreak();
     noecho();
@@ -35,9 +43,11 @@ void ClientController::set_up()
     wrefresh(input_win);
 }
 
-void ClientController::join_server(int port)
+void ClientController::join_server(std::string username, std::string user_id, int port)
 {
-    set_up();
+    _user_id = user_id;
+
+    set_up(port);
     websocket_client.init_asio();
     websocket_client.clear_access_channels(websocketpp::log::alevel::all);
     websocket_client.clear_error_channels(websocketpp::log::elevel::all);
@@ -169,7 +179,17 @@ void ClientController::handle_input(websocketpp::connection_hdl con)
 
 void ClientController::cleanup()
 {
-    endwin();
-    delwin(message_win);
-    delwin(input_win);
+    if (!_user_id.empty() && !_server_id.empty())
+    {
+        std::string query = "DELETE FROM connection where user_id ='" + _user_id + "' AND server_id ='" + _server_id + "';";
+        db_controller.execute_query(query);
+    }
+    if (message_win && input_win)
+    {
+        endwin();
+        delwin(message_win);
+        delwin(input_win);
+        message_win = nullptr;
+        input_win = nullptr;
+    }
 }

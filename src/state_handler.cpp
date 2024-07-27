@@ -90,7 +90,7 @@ State StateHandler::register_page()
 
     if (password != password2)
     {
-        std::cout << "The passwords dont match!\n"
+        std::cout << "The passwords don't match!\n"
                   << std::endl;
         return State::REGISTER;
     }
@@ -109,7 +109,7 @@ State StateHandler::register_page()
 
 State StateHandler::menu_page()
 {
-    std::cout << "1) Join a server\n"
+    std::cout << "\n1) Join a server\n"
                  "2) Create a server\n"
                  "3) View servers\n"
                  "4) Quit\n"
@@ -151,7 +151,14 @@ State StateHandler::join_server_page()
 
     std::map<std::string, int> servers = server_manager.get_all_servers();
 
-    std::cout << "Here is a list of servers to join (name: port)\n. Please type in the server name you want to join (q to quit)." << std::endl;
+    if (servers.size() == 0)
+    {
+        std::cout << "No servers currently available to join."
+                  << std::endl;
+        return State::MENU;
+    }
+
+    std::cout << "Here is a list of servers to join (name: port).\n Please type in the server name you want to join (q to quit)." << std::endl;
     for (const auto &server : servers)
     {
         std::cout << server.first << ": " << server.second << std::endl;
@@ -179,8 +186,7 @@ State StateHandler::join_server_page()
             invalid = false;
         }
     }
-
-    client_controller.join_server(port);
+    client_controller.join_server(user->get_username(), user->get_id(), port);
     return State::MENU;
 }
 
@@ -204,6 +210,14 @@ State StateHandler::view_servers_page()
 {
     std::string input;
     std::map<std::string, int> servers = server_manager.get_servers();
+
+    if (servers.size() == 0)
+    {
+        std::cout << "You have not created any servers."
+                  << std::endl;
+        return State::MENU;
+    }
+
     std::cout << "Here are all of your servers, type in the server you want to inspect." << std::endl;
     for (const auto &server : servers)
     {
@@ -272,6 +286,7 @@ void StateHandler::manage_server_page(std::string server_name)
         return;
     case 2:
         std::cout << "here are the users" << std::endl;
+        server_manager.get_users_in_server(server_name);
         return;
     case 3:
         server_manager.close(server_name);
@@ -293,4 +308,5 @@ void StateHandler::quit()
         server_manager.close();
         user_controller.unset_as_active(user->get_username());
     }
+    client_controller.cleanup();
 }

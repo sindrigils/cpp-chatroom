@@ -3,17 +3,21 @@
 
 std::atomic<int> ServerManager::next_port{9002};
 
-ServerManager::ServerManager(){};
+ServerManager::ServerManager() {};
+
+ServerManager::~ServerManager()
+{
+    close();
+}
 
 void ServerManager::create_server(std::string name, std::string owner)
 {
     int port = get_next_port();
-    std::string user_name = "sindri";
-    std::string get_user_query = "SELECT id from custom_user where username = '" + user_name + "';";
+    std::string get_user_query = "SELECT id from custom_user where username = '" + owner + "';";
     pqxx::result user_result = db_controller.execute_query(get_user_query);
     std::string user_id = user_result[0]["id"].as<std::string>();
 
-    std::string query = "INSERT INTO server (name, port, owner) VALUES ('" + name + "', '" + std::to_string(port) + "', '" + user_id + "')";
+    std::string query = "INSERT INTO server (name, port, owner) VALUES ('" + name + "', '" + std::to_string(port) + "', '" + user_id + "');";
     db_controller.execute_query(query);
 
     std::shared_ptr<ServerController> server_controller = std::make_shared<ServerController>(port);
@@ -28,7 +32,7 @@ void ServerManager::create_server(std::string name, std::string owner)
 std::map<std::string, int> ServerManager::get_all_servers()
 {
     std::map<std::string, int> ret_servers;
-    std::string query = "SELECT name, port from server";
+    std::string query = "SELECT name, port from server;";
     pqxx::result result = db_controller.execute_query(query);
     for (const auto &row : result)
     {
@@ -106,5 +110,12 @@ void ServerManager::display_log(std::string server_name)
 {
     auto server_data_it = servers.find(server_name);
     server_data_it->second.controller->read_log();
+    return;
+}
+
+void ServerManager::get_users_in_server(std::string server_name)
+{
+    auto server_data_it = servers.find(server_name);
+    server_data_it->second.controller->display_users();
     return;
 }
