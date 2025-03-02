@@ -4,3 +4,5 @@
 !.gitkeep
 .env
 /websocketpp
+.vscode
+.a
